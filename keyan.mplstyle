@@ -1,0 +1,58 @@
+# To check more avaialble options see:
+# https://matplotlib.org/tutorials/introductory/customizing.html
+
+font.family                 : serif
+font.serif                  : Garamond
+
+image.cmap                  : cividis
+
+axes.titlesize              : 14
+axes.labelsize              : 10
+axes.edgecolor              : (0.3,0.3,0.3)
+axes.labelcolor             : (0.3,0.3,0.3)
+axes.linewidth              : 1
+axes.spines.top             : False
+axes.spines.right           : False
+axes.spines.bottom          : True
+axes.spines.left            : True
+
+axes.prop_cycle             : cycler('color', [ 'CB4035', '966ebb','1B998B', '74914E', 'FCA9A4'])
+
+axes.grid                   : True
+grid.alpha                  : 0.7
+grid.linestyle              : --
+grid.linewidth              : 0.6
+
+# LINES
+lines.linewidth             : 1.
+lines.markeredgewidth       : 0.0
+lines.markersize            : 5
+
+lines.solid_joinstyle       : round
+lines.solid_capstyle        : round
+
+# DASHES
+lines.dash_capstyle         : round
+lines.dash_joinstyle        : round
+
+lines.dashed_pattern        : 3.7, 3.5
+lines.dashdot_pattern       : 6.4, 3, 1, 3
+lines.dotted_pattern        : 1, 2.8
+
+
+xtick.labelsize             : 10
+xtick.color                 : (0.3,0.3,0.3)
+xtick.direction             : in
+ytick.labelsize             : 10
+ytick.color                 : (0.3,0.3,0.3)
+ytick.direction             : in
+
+figure.figsize              : 5, 5
+figure.dpi                  : 150
+figure.titlesize            : 15
+
+scatter.marker              : .
+
+savefig.dpi                 : 300
+savefig.transparent         : True
+savefig.format              : png
