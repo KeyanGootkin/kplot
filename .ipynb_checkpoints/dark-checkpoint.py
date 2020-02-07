@@ -1,2 +1,2 @@
 import matplotlib.pyplot as plt
-plt.style.use("kplot/dark.mplstyle")
+plt.style.use("dark.mplstyle")
