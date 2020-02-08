@@ -1,0 +1,6 @@
+README.md
+setup.py
+kplot/kplot.egg-info/PKG-INFO
+kplot/kplot.egg-info/SOURCES.txt
+kplot/kplot.egg-info/dependency_links.txt
+kplot/kplot.egg-info/top_level.txt

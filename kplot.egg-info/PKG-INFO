@@ -1,0 +1,17 @@
+Metadata-Version: 2.1
+Name: kplot
+Version: 0.0.13
+Summary: A small package for making matplotlib plots pretty <3
+Home-page: https://github.com/KeyanGootkin/kplot
+Author: Keyan Gootkin
+Author-email: KeyanGootkin@gmail.com
+License: UNKNOWN
+Description: # kplot
+        A little package to make it easy to make pretty plots in matplotlib without having to fiddle too much :-)
+        
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
