@@ -4,24 +4,24 @@
 font.family                 : serif
 font.serif                  : Garamond
 
-image.cmap                  : cividis
+image.cmap                  : magma
 
 axes.titlesize              : 14
 axes.labelsize              : 10
-axes.edgecolor              : (0.3,0.3,0.3)
-axes.labelcolor             : (0.3,0.3,0.3)
+axes.edgecolor              : black
+axes.labelcolor             : black
 axes.linewidth              : 1
 axes.spines.top             : False
 axes.spines.right           : False
 axes.spines.bottom          : True
 axes.spines.left            : True
 
-axes.prop_cycle             : cycler('color', [ 'CB4035', '966ebb','1B998B', '74914E', 'FCA9A4'])
+axes.prop_cycle             : cycler('color', [ '140E36', '641A80','B73779', 'F7705C', 'FECF92'])
 
-axes.grid                   : True
+axes.grid                   : False
 grid.alpha                  : 0.7
 grid.linestyle              : --
-grid.linewidth              : 0.6
+grid.linewidth              : 0.5
 
 # LINES
 lines.linewidth             : 1.

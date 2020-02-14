@@ -51,7 +51,7 @@ ytick.labelsize             : 10
 ytick.color                 : white
 ytick.direction             : in
 
-figure.figsize              : 5, 5
+figure.figsize              : 5,5
 figure.dpi                  : 150
 figure.titlesize            : 15
 figure.facecolor            : 111111
