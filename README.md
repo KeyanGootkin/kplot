@@ -10,7 +10,7 @@ or to update it
 ```Unix
 pip install kplot -U
 ```
-If you want to get fancy just make sure you put kplot somewhere in your path, since kplot.dark, and kplot.kg look there for the style sheets!
+If you want to get fancy just make sure you put kplot somewhere in your `PATH`, since kplot.dark, kplot.colorblind, and kplot.kg look there for the style sheets!
 
 ## Usage
 To change how your plots look all you have to do is add a simple import statement!
