@@ -1,7 +1,7 @@
 #grayscale: no colors allowed here
 
-font.family                 : sans-serif
-font.sans-serif             : DejaVu Sans
+font.family                 : serif
+font.sans-serif             : Garamond
 
 image.cmap                  : cividis
 
