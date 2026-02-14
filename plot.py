@@ -7,7 +7,7 @@ from matplotlib.collections import LineCollection
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap, Colormap
 CmapTypes = [ListedColormap, LinearSegmentedColormap, Colormap]
 
-from kplot.Axes import access_subplots
+from kplot.axes import access_subplots
 from kplot.utils import alias_kwarg, column_width, parse_multiax_params
 
 def decode_plot_src(src) -> tuple:

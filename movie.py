@@ -1,6 +1,6 @@
 from kplot.image import show, column_width, two_column_width
 from kplot.plot import plot 
-from kplot.Axes import subplots
+from kplot.axes import subplots
 from matplotlib.animation import FuncAnimation
 import matplotlib.pyplot as plt
 import numpy as np

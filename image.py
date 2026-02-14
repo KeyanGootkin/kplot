@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from kplot.Axes import access_subplots
+from kplot.axes import access_subplots
 from kplot.utils import alias_kwarg, parse_multiax_params, column_width, two_column_width
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap, Colormap

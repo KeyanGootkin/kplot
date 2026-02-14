@@ -3,7 +3,7 @@
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 
 from kplot.utils import alias_kwarg, column_width
-from kplot.Axes import access_subplots
+from kplot.axes import access_subplots
 from kplot.utils import alias_kwarg, column_width, parse_multiax_params
 
 import numpy as np
