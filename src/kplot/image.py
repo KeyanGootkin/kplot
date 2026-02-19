@@ -1,15 +1,23 @@
-import matplotlib.pyplot as plt
-import numpy as np
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                             Imports                             <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 from kplot.axes import access_subplots
 from kplot.utils import alias_kwarg, parse_multiax_params, column_width, two_column_width
+from kplot.cmaps import Norm, Cmap
+import numpy as np
+import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap, Colormap
-CmapTypes = [ListedColormap, LinearSegmentedColormap, Colormap]
-from matplotlib.colors import Normalize, LogNorm, FuncNorm, AsinhNorm, PowerNorm, SymLogNorm, BoundaryNorm, CenteredNorm, TwoSlopeNorm
-NormTypes = [Normalize, LogNorm, FuncNorm, AsinhNorm, PowerNorm, SymLogNorm, BoundaryNorm, CenteredNorm, TwoSlopeNorm]
 
-
-
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                              Types                              <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                           Definitions                           <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                            Functions                            <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 def decode_image_src(src) -> np.ndarray:
     match src:
         case str(): 
@@ -18,7 +26,6 @@ def decode_image_src(src) -> np.ndarray:
             return src
         case list():
             return np.array(src)
-
 def _show_one_frame(plot_dict, axes_dict, cbar_dict, **kwargs):
     # populate name space
     x, y, image = plot_dict['x'], plot_dict['y'], plot_dict['image']
@@ -49,7 +56,6 @@ def _show_one_frame(plot_dict, axes_dict, cbar_dict, **kwargs):
             label=cbar_dict['units']
         )
     return [img]
-
 def construct_mass_norm(images: np.ndarray, norm):
     match norm:
         # linear norms
@@ -106,14 +112,13 @@ def construct_mass_norm(images: np.ndarray, norm):
             return FuncNorm(norm.functions, vmin=vmin, vmax=vmax, clip=norm.clip)
 
     pass
-
 def _show_multiple_frames(plot_dict: dict, axes_dict: dict, cbar_dict: dict, N: int, **kwargs):
     fig, axes, images = plot_dict['fig'], plot_dict['axes'], plot_dict['image'] # these are set as single and multiple before arriving to this function    
     xs = parse_multiax_params(plot_dict['x'], [np.ndarray], N)
     ys = parse_multiax_params(plot_dict['y'], [np.ndarray], N)
-    cmaps = parse_multiax_params(plot_dict['cmap'], CmapTypes, N)
+    cmaps = parse_multiax_params(plot_dict['cmap'], Cmap.types, N)
     colorbars = 'single' if cbar_dict['colorbar']=='single' else parse_multiax_params(cbar_dict['colorbar'], [bool], N)
-    norms = 'single' if colorbars=='single' else parse_multiax_params(plot_dict['norm'], NormTypes, N)
+    norms = 'single' if colorbars=='single' else parse_multiax_params(plot_dict['norm'], Norm.types, N)
     cbar_locations = parse_multiax_params(cbar_dict['location'], [str], N)
     cbar_sizes = parse_multiax_params(cbar_dict['size'], [str], N)
     cbar_pads = parse_multiax_params(cbar_dict['pad'], [float], N)
@@ -130,85 +135,241 @@ def _show_multiple_frames(plot_dict: dict, axes_dict: dict, cbar_dict: dict, N: 
         ax, image = axes[i], images[i]
         imgs.append(ax.pcolormesh(xs[i], ys[i], image, cmap=cmaps[i], norm=norms[i], **kwargs))
     return imgs
-
 def show(
-        src,
+        field: np.ndarray,
+        tile_image: bool = False,
         #x/y axes
         x: np.ndarray|None = None,
         y: np.ndarray|None = None,
         #figure setup
-        fig=None, axes=None, ax=None,
-        figsize: tuple[float, float] = (column_width, column_width),
-        show: bool = True,
-        #plot color parameters
-        cmap = plt.cm.plasma,
-        norm = None,
+        fig = None,
+        ax = None,
+        axis: bool = True,
+        figsize: tuple[float, float] = (10, 10),
+        show: bool = False,
+        #plot parameters
+        cmap = default_cmap,
         colorbar: bool = True,
-        cbar_location: str = 'right',
-        cbar_size: str = "5%",
-        cbar_pad: float = 0.05,
+        colorbar_style: dict = {'location':'right', "size":"7%", "pad":0.05},
         cticks: list|None = None,
         units: str|None = None,
+        #contour options
+        contour: np.ndarray|None = None,
+        contour_style: dict = {'levels': 10, 'colors': 'black'},
         #plot formating
-        xlabel: None|str = None,
-        ylabel: None|str = None, 
         xlim: tuple = (None, None),
         ylim: tuple = (None, None),
         title: str|None = None,
-        aspect: str = 'equal',
         #presentation parameters
         save: str = "",
         dpi: int = 100,
         #everything else goes into pcolormesh
         **kwargs
-    ):
-    # set up the image
-    image = decode_image_src(src)
-    # prep figure
-    close_fig = True if fig is None else False
-    show = show if fig is None else False
-    axes = alias_kwarg("axes", axes, "ax", ax)
-    fig, axes = access_subplots(fig=fig, axes=axes, figsize=figsize)
-    # check axes match image
-    if x is None: x, y = np.mgrid[:image.shape[-2], :image.shape[-1]]
-    # prepare to pass info to plotting functions
-    plot_dict = {
-        'x': x,
-        'y': y,
-        'image': image,
-        'fig': fig,
-        'axes': axes,
-        'cmap': cmap,
-        'norm': norm
-    }
-    cbar_dict = {
-        'colorbar': colorbar, 
-        'location': cbar_location,
-        'size': cbar_size,
-        'pad': cbar_pad,
-        'cticks': cticks, 
-        'units': units
-    }
-    axes_dict = {
-        'xlim': xlim,
-        'ylim': ylim,
-        'xlabel': xlabel,
-        'ylabel': ylabel,
-        'title': title,
-        'aspect': aspect
-    }
-    match image.ndim:
-        case 2: 
-            imgs = _show_one_frame(plot_dict, axes_dict, cbar_dict, **kwargs)
-        case 3:
-            multiax = image.shape[0] == len(axes)
-            assert multiax, f"Can only handle multiple images if there are multiple axes, {image.shape, len(axes)}"
-            imgs = _show_multiple_frames(plot_dict, axes_dict, cbar_dict, N=len(image), **kwargs)
+):
+    """a convinient way to plt.imshow and arrange it nicely
 
+    Args:
+        field (np.ndarray): The image to be plotted
+        tile_image (bool, optional): whether to tile the image. Defaults to False.
+        x (np.ndarray | None, optional): x coordinates of pixels. Defaults to None.
+        y (np.ndarray | None, optional): y coordinates of pixels. Defaults to None.
+        fig (plt.Figure, optional): the figure on which to plot. Defaults to None.
+        ax (plt.Axes, optional): the ax on which to plot this image. Defaults to None.
+        axis (bool, optional): whether to include the whole axis, if False then only the plot area will be shown.
+        figsize (tuple[float, float], optional): unless fig and ax are given plot on a figure of this size. Defaults to (10, 10).
+        show (bool, optional): whether to use the plt.show() command at the end. Defaults to True.
+        cmap (plt.ColorMap, optional): the colormap to use for the image. Defaults to plasma.
+        colorbar (bool, optional): whether to add a colorbar. Defaults to True.
+        colorbar_style (dict, optional): dictionary containing kwargs for the colorbar command. Defaults to {'location':'right', "size":"7%", "pad":0.05}.
+        cticks (list | None, optional): the ticks to use on the colorbar. Defaults to None.
+        units (str | None, optional): label for the colorbar. Defaults to None.
+        contour (np.ndarray | None, optional): whether to put a contour plot on top. Defaults to None.
+        contour_style (dict, optional): kwargs for contour plotting command. Defaults to {'levels': 10, 'colors': 'black'}.
+        xlim (tuple, optional): the limits on the x axis. Defaults to (None, None).
+        ylim (tuple, optional): the limits on the y axis. Defaults to (None, None).
+        title (str | None, optional): the plot title. Defaults to None.
+        save (str, optional): if given save the plot to this path. Defaults to "".
+        dpi (int, optional): dots per inch to save at. Defaults to 100.
+
+    Returns:
+        fig (plt.Figure): The figure on which the plot was put
+        ax (plt.Axes): The ax on which the plot was put
+        img (plt.Artist): the plot artist
+    """
+    # prep data
+    assert (ndims:=len(field.shape))==2, f"show was given an image with {ndims} dimensions, please provide a 2d array"
+    image = tile(field) if tile_image else field
+    # check axes
+    if x is None: x, y = np.mgrid[:image.shape[0], :image.shape[1]]
+    if tile_image: x, y = np.r_[x, x+x[-1], x+2*x[-1]], np.r_[y, y+y[-1], y+2*y[-1]]
+    else: assert (len(x), len(y)) == image.shape, f"Given x of shape {len(x)} and y of shape {len(y)} but image is of shape {image.shape}"
+    # prep figure
+    if ax is None: (fig, ax) = plt.subplots(figsize=figsize)
+    fig = ax.get_figure()
+    if not axis: 
+        ax.axis('off')
+        ax.set_position([0, 0, 1, 1])
+        colorbar = False
+    # plot data
+    img = ax.pcolormesh(x, y, image, cmap=cmap, **kwargs)
+    # colorbar
+    if colorbar: 
+        divider = make_axes_locatable(ax)
+        colorbar_location = colorbar_style.pop("location") if "location" in colorbar_style.keys() else "right"
+        cax = divider.append_axes(colorbar_location, **colorbar_style)
+        fig.colorbar(img, cax=cax, ax=ax, ticks=cticks, label=units, orientation = 'vertical' if colorbar_location in ('right', 'left') else 'horizontal')
+        if colorbar_location=='top':
+            cax.xaxis.set_ticks_position('top')
+            cax.xaxis.set_label_position('top')
+    # contour
+    if not contour is None: ax.contour(contour, **contour_style)
+    # set limits
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
+    # set title
+    ax.set_title(title)
+    # set aspect
+    ax.set_aspect('equal')
     # present the figure
     if len(save)>0: 
-        if not '.' in save: save +=".jpg"
+        if not '.' in save: save +=".jpeg"
+        plt.savefig(save, dpi=dpi, bbox_inches='tight')
+    if show: plt.show()
+    return fig, ax, img
+def contour(
+        Z: np.ndarray, 
+        #x/y axes
+        x: np.ndarray|None = None,
+        y: np.ndarray|None = None,
+        #figure setup
+        fig = None,
+        ax = None,
+        axis: bool = True,
+        figsize: tuple[float, float] = (10, 10),
+        show: bool = False,
+        #plot parameters
+        levels = 10,
+        color = 'black',
+        colors = None,
+        cmap = None,
+        negative_linestyles = '-',
+        linestyles = '-',
+        #plot formating
+        xlim: tuple = (None, None),
+        ylim: tuple = (None, None),
+        title: str|None = None,
+        #presentation parameters
+        save: str = "",
+        dpi: int = 100,
+        #throw the rest in a dict
+        **kwds
+    ):
+    # prep data
+    assert (ndims:=len(Z.shape))==2, f"show was given an image with {ndims} dimensions, please provide a 2d array"
+    # check axes
+    if x is None: x, y = np.mgrid[:Z.shape[0], :Z.shape[1]]
+    else: assert (len(x), len(y)) == Z.shape, f"Given x of shape {len(x)} and y of shape {len(y)} but image is of shape {image.shape}"
+    # prep figure
+    if ax is None: (fig, ax) = plt.subplots(figsize=figsize)
+    fig = ax.get_figure()
+    if not axis: 
+        ax.axis('off')
+        ax.set_position([0, 0, 1, 1])
+        colorbar = False
+    # plot data
+    contour_dict = {'levels':levels,"linestyles":linestyles,'negative_linestyles':negative_linestyles}
+    if cmap: #plot with a cmap
+        contour_dict['cmap'] = cmap
+    else: #plot with a color
+        contour_dict['colors'] = color if not colors else colors
+    img = ax.contour(
+        x, y, Z,
+        **contour_dict,
+        **kwds
+    )
+    # set limits
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
+    # set title
+    ax.set_title(title)
+    # set aspect
+    ax.set_aspect('equal')
+    # present the figure
+    if len(save)>0: 
+        if not '.' in save: save +=".jpeg"
         plt.savefig(save, dpi=dpi)
     if show: plt.show()
-    if close_fig: plt.close(fig)
-    else: return fig, ax, imgs
+    return fig, ax, img
+def contourf(
+        Z: np.ndarray, 
+        #x/y axes
+        x: np.ndarray|None = None,
+        y: np.ndarray|None = None,
+        #figure setup
+        fig = None,
+        ax = None,
+        axis: bool = True,
+        figsize: tuple[float, float] = (10, 10),
+        show: bool = False,
+        #plot parameters
+        levels = 10,
+        cmap = default_cmap,
+        colorbar: bool = True,
+        colorbar_style: dict = {'location':'right', "size":"7%", "pad":0.05},
+        cticks: list|None = None,
+        units: str|None = None,
+        #plot formating
+        xlim: tuple = (None, None),
+        ylim: tuple = (None, None),
+        title: str|None = None,
+        #presentation parameters
+        save: str = "",
+        dpi: int = 100,
+        #throw the rest in a dict
+        **kwds
+    ):
+    # prep data
+    assert (ndims:=len(Z.shape))==2, f"show was given an image with {ndims} dimensions, please provide a 2d array"
+    # check axes
+    if x is None: x, y = np.mgrid[:z.shape[0], :z.shape[1]]
+    else: assert (len(x), len(y)) == z.shape, f"Given x of shape {len(x)} and y of shape {len(y)} but image is of shape {image.shape}"
+    # prep figure
+    if ax is None: (fig, ax) = plt.subplots(figsize=figsize)
+    fig = ax.get_figure()
+    if not axis: 
+        ax.axis('off')
+        ax.set_position([0, 0, 1, 1])
+        colorbar = False
+    # plot data
+    contour_dict = {'levels':levels,"cmap":cmap}
+    img = ax.contourf(
+        x, y, Z,
+        **contour_dict,
+        **kwds
+    )
+    # colorbar
+    if colorbar: 
+        divider = make_axes_locatable(ax)
+        colorbar_location = colorbar_style.pop("location") if "location" in colorbar_style.keys() else "right"
+        cax = divider.append_axes(colorbar_location, **colorbar_style)
+        fig.colorbar(img, cax=cax, ax=ax, ticks=cticks, label=units)
+    # set limits
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
+    # set title
+    ax.set_title(title)
+    # set aspect
+    ax.set_aspect('equal')
+    # present the figure
+    if len(save)>0: 
+        if not '.' in save: save +=".jpeg"
+        plt.savefig(save, dpi=dpi)
+    if show: plt.show()
+    return fig, ax, img
+
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                            Decorators                           <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                             Classes                             <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==

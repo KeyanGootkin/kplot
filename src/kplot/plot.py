@@ -1,21 +1,29 @@
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                             Imports                             <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+from kplot.axes import access_subplots
+from kplot.utils import alias_kwarg, column_width, parse_multiax_params
+from kplot.cmaps import Cmap
 import warnings
 import numpy as np
-
 import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.collections import LineCollection
-from matplotlib.colors import ListedColormap, LinearSegmentedColormap, Colormap
-CmapTypes = [ListedColormap, LinearSegmentedColormap, Colormap]
 
-from kplot.axes import access_subplots
-from kplot.utils import alias_kwarg, column_width, parse_multiax_params
-
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                              Types                              <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                           Definitions                           <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                            Functions                            <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 def decode_plot_src(src) -> tuple:
     match src:
         case (np.ndarray()|list()|tuple(), np.ndarray()|list()|tuple()):
             return np.array(src[0]), np.array(src[1])
         case _: raise TypeError(f"plotting function recieved source of type {type(src)}, which is not supported.")
-
 def _plot_one_line(plot_dict, line_dict, axes_dict, **kwargs):
     x, y, ax = plot_dict['x'], plot_dict['y'], plot_dict['axes']
     color, lw, ls, m, ms = line_dict['color'], line_dict['linewidth'], line_dict['linestyle'], line_dict['marker'], line_dict['markersize']
@@ -39,7 +47,6 @@ def _plot_one_line(plot_dict, line_dict, axes_dict, **kwargs):
     # set aspect
     ax.set_aspect(axes_dict['aspect'])
     return artist
-
 def _plot_multiple_lines(plot_dict: dict, line_dict: dict, axes_dict: dict, N: int, multiax: bool, **kwargs):
     fig = plot_dict['fig']
     axes = parse_multiax_params(plot_dict['axes'], [Axes], N)
@@ -49,7 +56,7 @@ def _plot_multiple_lines(plot_dict: dict, line_dict: dict, axes_dict: dict, N: i
     match line_dict['color']:
         case str()|tuple(): 
             colors = parse_multiax_params(line_dict['color'], [str, tuple], N)
-        case x if type(line_dict['color']) in CmapTypes: 
+        case x if type(line_dict['color']) in Cmap.types: 
             colors = [line_dict['color'](i/(N+1)) for i in range(N)]
         case [int(), *_] | [float(), *_]: 
             mn, mx = np.nanmin(line_dict['color']), np.nanmax(line_dict['color'])
@@ -72,7 +79,6 @@ def _plot_multiple_lines(plot_dict: dict, line_dict: dict, axes_dict: dict, N: i
         ax = axes[i]
         lines.append(ax.plot(xs[i], ys[i], color=colors[i], ls=lss[i], lw=lws[i], marker=ms[i], ms=mss[i]))
     return fig, axes, lines
-
 def plot(
     *src,
     #figure setup
@@ -82,8 +88,8 @@ def plot(
     show: bool = False,
     close: bool = False,
     #line formating
-    color: str|Colormap|list[int] = "black",
-    cmap: str|Colormap = plt.cm.plasma,
+    color: str|Cmap|list[int] = "black",
+    cmap: str|Cmap = plt.cm.plasma,
     linewidth: int = None, lw: int = None,
     linestyle: str = None, ls: str = None,
     #marker formatting
@@ -165,7 +171,6 @@ def plot(
     if show: plt.show()
     if close: plt.close(fig)
     return fig, axes, lines   
-
 def _align_algorithm(x: list|np.ndarray, mode: str):
     match mode:
         case 'mid'|'m'|'center'|'c':
@@ -176,16 +181,13 @@ def _align_algorithm(x: list|np.ndarray, mode: str):
             return x[:-1]
         case 'right'|'r':
             return x[1:]
-
 def diffplot(x, y, align: str = 'mid', **kwargs):
     dx = np.diff(x)
     dy = np.diff(y)
     x_aligned = _align_algorithm(x, align)
     return plot(x_aligned, dy/dx, **kwargs)
-
 def powerlawplot(x, y, align: str = 'logmid', **kwargs):
     return diffplot(np.log10(x), np.log10(y), align=align, **kwargs)
-
 def colored_line(x, y, c, ax, **lc_kwargs):
     """
     Plot a line with a color specified along the line by a third value.
@@ -244,3 +246,13 @@ def colored_line(x, y, c, ax, **lc_kwargs):
     lc.set_array(c)  # set the colors of each segment
 
     return ax.add_collection(lc)
+
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                            Decorators                           <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                             Classes                             <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+
+
+

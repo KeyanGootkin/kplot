@@ -5,11 +5,9 @@
 from kplot.utils import alias_kwarg, column_width
 from kplot.axes import access_subplots
 from kplot.utils import alias_kwarg, column_width, parse_multiax_params
-
+from kplot.cmaps import Cmap
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.colors import ListedColormap, LinearSegmentedColormap, Colormap
-CmapTypes = [ListedColormap, LinearSegmentedColormap, Colormap]
 
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                           Definitions                           <|===|-<
@@ -21,8 +19,6 @@ CmapTypes = [ListedColormap, LinearSegmentedColormap, Colormap]
 def decode_hist_src(src) -> tuple:
     match src:
         case np.ndarray()|list(): return src 
-        
-
 def hist(
     *src,
     #figure setup
@@ -32,8 +28,8 @@ def hist(
     show: bool = False,
     close: bool = False,
     #line formating
-    color: str|Colormap|list[int] = "black",
-    cmap: str|Colormap = plt.cm.plasma,
+    color: str|Cmap|list[int] = "black",
+    cmap: str|Cmap = plt.cm.plasma,
     linewidth: int = None, lw: int = None,
     linestyle: str = None, ls: str = None,
     #plot formating

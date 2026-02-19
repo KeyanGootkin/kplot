@@ -1,11 +1,23 @@
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                             Imports                             <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+from kplot.utils import column_width, two_column_width
+
 from matplotlib.pyplot import subplots as matplotlib_subplots
 from matplotlib.pyplot import subplot_mosaic
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes 
 import numpy as np
 
-from kplot.utils import column_width, two_column_width
-
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                              Types                              <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                           Definitions                           <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                            Functions                            <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 def decode_subplots_args(*args, **kwargs):
     if 'figsize' in kwargs: kwargs['figsize'] = tuple(
         column_width if kwargs['figsize'][i]==1 else two_column_width if kwargs['figsize'][i]==2 else kwargs['figsize'][i]
@@ -17,9 +29,7 @@ def decode_subplots_args(*args, **kwargs):
             return subplot_mosaic(*args, **kwargs)
         case ():
             return matplotlib_subplots(**kwargs)
-
 def subplots(*args, **kwargs): return decode_subplots_args(*args, **kwargs)
-
 def access_subplots(
         fig: None|Figure = None, 
         axes: None|Axes|list = None,
@@ -44,3 +54,10 @@ def access_subplots(
         case Figure(), list()|np.ndarray():
             return fig, axes  
     return fig, axes
+
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                            Decorators                           <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                             Classes                             <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==

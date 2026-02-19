@@ -1,13 +1,25 @@
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                             Imports                             <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+from kplot.cmaps import Cmap
 import numpy as np
 from matplotlib.colors import LogNorm, SymLogNorm, TwoSlopeNorm, Normalize
 
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                              Types                              <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                           Definitions                           <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 column_width = 242.26653/72.27
 two_column_width = 513.1174/72.27
 
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                            Functions                            <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 def alias_kwarg(kw1, it1, kw2, it2): 
     assert not all([it1 is not None, it2 is not None]), f"either give an {kw1} or a {kw2} keyword, not both"
     return it1 if it1 is not None else it2
-
 def parse_multiax_params(param, target_types: list, N: int, out_ndim: int = 0):
     if type(param) in [list, np.ndarray]:
         if target_types[0] in [list, np.ndarray]:
@@ -23,14 +35,13 @@ def parse_multiax_params(param, target_types: list, N: int, out_ndim: int = 0):
     
     elif type(param) in target_types: return [param] * N
     return [None] * N
-
 def auto_norm(
     norm: str, 
     frames: np.ndarray, 
     linear_threshold: float|None = None, 
     center: float|None = None, 
     saturate: float|None = None
-):
+) -> Cmap:
     frames = frames[(-np.inf < frames)&(frames < np.inf)]
     # set min/max IF saturate is None                          or IF saturate is a tuple                                          ELSE assume its a float
     low = np.nanmin(frames) if saturate is None else np.nanquantile(frames, 1-saturate[0]) if isinstance(saturate, tuple) else np.nanquantile(frames, 1-saturate)
@@ -53,4 +64,9 @@ def auto_norm(
             return TwoSlopeNorm(vmin=low, vcenter=vcenter, vmax=high)
         case _: return Normalize(vmin=low, vmax=high)
 
-    
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                            Decorators                           <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                             Classes                             <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
