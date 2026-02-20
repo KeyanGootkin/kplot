@@ -4,6 +4,8 @@
 from kplot.axes import access_subplots
 from kplot.utils import alias_kwarg, parse_multiax_params, column_width, two_column_width
 from kplot.cmaps import Norm, Cmap
+
+from kbasic.array import tile
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -148,7 +150,7 @@ def show(
         figsize: tuple[float, float] = (10, 10),
         show: bool = False,
         #plot parameters
-        cmap = default_cmap,
+        cmap = plt.cm.plasma,
         colorbar: bool = True,
         colorbar_style: dict = {'location':'right', "size":"7%", "pad":0.05},
         cticks: list|None = None,
@@ -268,7 +270,7 @@ def contour(
     assert (ndims:=len(Z.shape))==2, f"show was given an image with {ndims} dimensions, please provide a 2d array"
     # check axes
     if x is None: x, y = np.mgrid[:Z.shape[0], :Z.shape[1]]
-    else: assert (len(x), len(y)) == Z.shape, f"Given x of shape {len(x)} and y of shape {len(y)} but image is of shape {image.shape}"
+    else: assert (len(x), len(y)) == Z.shape, f"Given x of shape {len(x)} and y of shape {len(y)} but image is of shape {Z.shape}"
     # prep figure
     if ax is None: (fig, ax) = plt.subplots(figsize=figsize)
     fig = ax.get_figure()
@@ -313,7 +315,7 @@ def contourf(
         show: bool = False,
         #plot parameters
         levels = 10,
-        cmap = default_cmap,
+        cmap = plt.cm.plasma,
         colorbar: bool = True,
         colorbar_style: dict = {'location':'right', "size":"7%", "pad":0.05},
         cticks: list|None = None,
@@ -331,8 +333,8 @@ def contourf(
     # prep data
     assert (ndims:=len(Z.shape))==2, f"show was given an image with {ndims} dimensions, please provide a 2d array"
     # check axes
-    if x is None: x, y = np.mgrid[:z.shape[0], :z.shape[1]]
-    else: assert (len(x), len(y)) == z.shape, f"Given x of shape {len(x)} and y of shape {len(y)} but image is of shape {image.shape}"
+    if x is None: x, y = np.mgrid[:Z.shape[0], :Z.shape[1]]
+    else: assert (len(x), len(y)) == Z.shape, f"Given x of shape {len(x)} and y of shape {len(y)} but image is of shape {Z.shape}"
     # prep figure
     if ax is None: (fig, ax) = plt.subplots(figsize=figsize)
     fig = ax.get_figure()
