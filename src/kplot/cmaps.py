@@ -3,7 +3,7 @@
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 from kbasic.typing import Number, Iterable
 from matplotlib.pyplot import cm
-from matplotlib.colors import Colormap, LinearSegmentedColormap, ListedColormap, \ 
+from matplotlib.colors import Colormap, LinearSegmentedColormap, ListedColormap, \
         hex2color, Normalize, LogNorm, FuncNorm, AsinhNorm, PowerNorm, SymLogNorm, \
         BoundaryNorm, CenteredNorm, TwoSlopeNorm 
 from numpy import uint8, zeros, ndarray, inf, nanmin, nanmax, nanquantile, nanmean, \
@@ -95,16 +95,45 @@ def align_algorithm(x: list|ndarray, mode: str):
         case 'right'|'r':
             return x[1:]
 def oklch_cmap(
-    luminosity: float|Iterable[float] = 0.5,
-    chroma: float|Iterable[float] = 0.4,
+    luminosity: float|Iterable[float] = (0, 1),
+    chroma: float|Iterable[float] = (0, 0.4),
     hue: float|Iterable[float] = (90, 270),
+    bad = None, under = None, over = None,
+    N = 256
 ) -> ListedColormap:
-    ls = ones(256) * luminosity if type(luminosity) in Number.types else linspace(*luminosity, 256)
-    cs = ones(256) * chroma if type(chroma) in Number.types else linspace(*chroma, 256)
-    hs = ones(256) * hue if type(hue) in Number.types else linspace(*hue, 256)
-    return ListedColormap([
+    ls = ones(N) * luminosity if type(luminosity) in Number.types else linspace(*luminosity, N)
+    cs = ones(N) * chroma if type(chroma) in Number.types else linspace(*chroma, N)
+    hs = ones(N) * hue if type(hue) in Number.types else linspace(*hue, N) % 360
+    colors_list = [
         OKLCH(li, ci, hi).rgb for li, ci, hi in zip(ls, cs, hs)
-    ])
+    ]
+    return ListedColormap(colors_list, N=N).with_extremes(
+        bad = colors_list[0] if bad is None else bad,
+        under = colors_list[0] if under is None else under,
+        over = colors_list[-1] if over is None else over
+    )
+def oklch_cmap_diverging(
+    luminosity: Iterable[float] = (1, 0, 1),
+    chroma: Iterable[float] = (0.4, 0, 0.4),
+    hue: Iterable[float] = (90, 270),
+    bad = None, under = None, over = None,
+    N = 256
+) -> ListedColormap:
+    ls = ones(N)
+    ls[:N//2] = linspace(*luminosity[:2], N//2)
+    ls[N//2:] = linspace(*luminosity[1:], N//2)
+    cs = ones(N)
+    cs[:N//2] = linspace(*chroma[:2], N//2)
+    cs[N//2:] = linspace(*chroma[1:], N//2)
+    hs = linspace(*hue, N) % 360
+    colors_list = [
+        OKLCH(li, ci, hi).rgb for li, ci, hi in zip(ls, cs, hs)
+    ]
+    return ListedColormap(colors_list, N=N).with_extremes(
+        bad = colors_list[N//2] if bad is None else bad,
+        under = colors_list[0] if under is None else under,
+        over = colors_list[-1] if over is None else over
+    )
 
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                             Classes                             <|===|-<
