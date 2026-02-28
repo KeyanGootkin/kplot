@@ -1,6 +1,6 @@
 [project]
 name = "kplot"
-version = "1.1.17"
+version = "1.1.19"
 description = "a matplotlib wrapper for keyan :-)"
 readme = "README.md"
 authors = [

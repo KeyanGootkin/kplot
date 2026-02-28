@@ -4,6 +4,7 @@
 from kplot.axes import access_subplots
 from kplot.utils import alias_kwarg, column_width, parse_multiax_params
 from kplot.cmaps import Cmap
+from kbasic.typing import Number
 import warnings
 import numpy as np
 import matplotlib.pyplot as plt
@@ -188,7 +189,7 @@ def diffplot(x, y, align: str = 'mid', **kwargs):
     return plot(x_aligned, dy/dx, **kwargs)
 def powerlawplot(x, y, align: str = 'logmid', **kwargs):
     return diffplot(np.log10(x), np.log10(y), align=align, **kwargs)
-def colored_line(x, y, c, ax, **lc_kwargs):
+def colored_line(x, y, color='black', alpha=1, ax=None, **lc_kwargs):
     """
     Plot a line with a color specified along the line by a third value.
 
@@ -203,6 +204,8 @@ def colored_line(x, y, c, ax, **lc_kwargs):
         The horizontal and vertical coordinates of the data points.
     c : array-like
         The color values, which should be the same size as x and y.
+    a : array-like
+        The alpha values, which should be the same size as x and y.
     ax : Axes
         Axis object on which to plot the colored line.
     **lc_kwargs
@@ -217,7 +220,7 @@ def colored_line(x, y, c, ax, **lc_kwargs):
     """
     if "array" in lc_kwargs:
         warnings.warn('The provided "array" keyword argument will be overridden')
-
+    if ax is None: ax=plt.gca()
     # Default the capstyle to butt so that the line segments smoothly line up
     default_kwargs = {"capstyle": "butt"}
     default_kwargs.update(lc_kwargs)
@@ -243,8 +246,10 @@ def colored_line(x, y, c, ax, **lc_kwargs):
     segments = np.concatenate((coord_start, coord_mid, coord_end), axis=1)
 
     lc = LineCollection(segments, **default_kwargs)
-    lc.set_array(c)  # set the colors of each segment
-
+    c = [color,]*len(x) if isinstance(color, str|tuple) else color
+    lc.set_colors(c)  # set the colors of each segment
+    a = [alpha,]*len(x) if type(alpha) in Number.types else alpha
+    lc.set_alpha(a) # set the alphas of each segment
     return ax.add_collection(lc)
 
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==

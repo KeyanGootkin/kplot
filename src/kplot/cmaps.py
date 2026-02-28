@@ -94,7 +94,7 @@ def align_algorithm(x: list|ndarray, mode: str):
             return x[:-1]
         case 'right'|'r':
             return x[1:]
-def oklch_cmap(
+def lch_cmap(
     luminosity: float|Iterable[float] = (0, 1),
     chroma: float|Iterable[float] = (0, 0.4),
     hue: float|Iterable[float] = (90, 270),
@@ -112,7 +112,7 @@ def oklch_cmap(
         under = colors_list[0] if under is None else under,
         over = colors_list[-1] if over is None else over
     )
-def oklch_cmap_diverging(
+def lch_cmap_diverging(
     luminosity: Iterable[float] = (1, 0, 1),
     chroma: Iterable[float] = (0.4, 0, 0.4),
     hue: Iterable[float] = (90, 270),
@@ -138,7 +138,7 @@ def oklch_cmap_diverging(
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                             Classes                             <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-class OKLCH:
+class LCH:
     def __init__(self, lightness: float, chroma: float, hue: float, alpha: float = 1) -> None:
         assert all(m:=[0<=lightness<=1, 0.<=chroma<=0.4, 0<=hue<360, 0<=alpha<=1]), \
             f"invalid value given in {lightness, chroma, hue, alpha}"
