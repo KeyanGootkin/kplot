@@ -97,7 +97,7 @@ def align_algorithm(x: list|ndarray, mode: str):
 def lch_cmap(
     luminosity: float|Iterable[float] = (0, 1),
     chroma: float|Iterable[float] = (0, 0.4),
-    hue: float|Iterable[float] = (90, 270),
+    hue: float|Iterable[float] = (-100, 100),
     bad = None, under = None, over = None,
     N = 256
 ) -> ListedColormap:
@@ -105,7 +105,7 @@ def lch_cmap(
     cs = ones(N) * chroma if type(chroma) in Number.types else linspace(*chroma, N)
     hs = ones(N) * hue if type(hue) in Number.types else linspace(*hue, N) % 360
     colors_list = [
-        OKLCH(li, ci, hi).rgb for li, ci, hi in zip(ls, cs, hs)
+        LCH(li, ci, hi).rgb for li, ci, hi in zip(ls, cs, hs)
     ]
     return ListedColormap(colors_list, N=N).with_extremes(
         bad = colors_list[0] if bad is None else bad,
@@ -115,7 +115,7 @@ def lch_cmap(
 def lch_cmap_diverging(
     luminosity: Iterable[float] = (1, 0, 1),
     chroma: Iterable[float] = (0.4, 0, 0.4),
-    hue: Iterable[float] = (90, 270),
+    hue: Iterable[float] = (-100, 100),
     bad = None, under = None, over = None,
     N = 256
 ) -> ListedColormap:
@@ -127,7 +127,7 @@ def lch_cmap_diverging(
     cs[N//2:] = linspace(*chroma[1:], N//2)
     hs = linspace(*hue, N) % 360
     colors_list = [
-        OKLCH(li, ci, hi).rgb for li, ci, hi in zip(ls, cs, hs)
+        LCH(li, ci, hi).rgb for li, ci, hi in zip(ls, cs, hs)
     ]
     return ListedColormap(colors_list, N=N).with_extremes(
         bad = colors_list[N//2] if bad is None else bad,
