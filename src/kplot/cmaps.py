@@ -63,6 +63,7 @@ def auto_norm(
     Returns:
         matplotlib normalization
     """
+    if type(norm) in Cmap.types: return norm
     frames = frames[(-inf < frames)&(frames < inf)]
     # set min/max IF saturate is None                          or IF saturate is a tuple                                          ELSE assume its a float
     low = nanmin(frames) if saturate is None else nanquantile(frames, 1-saturate[0]) if isinstance(saturate, tuple) else nanquantile(frames, 1-saturate)

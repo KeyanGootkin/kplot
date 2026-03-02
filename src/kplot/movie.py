@@ -1,7 +1,6 @@
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                             Imports                             <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-from kplot.utils import column_width, two_column_width
 from kplot.cmaps import auto_norm
 from kplot.image import show
 from kbasic.strings import purple
