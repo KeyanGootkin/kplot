@@ -28,7 +28,7 @@ def ffmpeg(
     system(f"ffmpeg -loglevel 8 -framerate {fps} -pattern_type glob -i '{source+'/*.png'}' -c:v libx264 -pix_fmt yuv420p -y {file_path}")
 def func_video(
         video_name: str, fig: Figure, updater: Callable, N: int, 
-        frames: str = "./frames", destination: str = "./", 
+        frames: str = f"./.temp.{video_name}", destination: str = "./", 
         dpi: int = 100, fps: int = 30, verbose=True
     ) -> None:
     ensure_path(frames)
@@ -45,6 +45,7 @@ def func_video(
         fig.savefig(f"{frames}/{str(i).zfill(ndigits)}.png", dpi=dpi)
     # make the video
     ffmpeg(video_name, source=frames, destination=destination, fps=fps)
+    system(f'rm -r {frames}')
 def line_video(
     xs, ys, 
     fname, 

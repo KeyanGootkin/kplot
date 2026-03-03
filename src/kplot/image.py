@@ -5,6 +5,8 @@ from kplot.cmaps import Cmap
 from kplot.axes import subplots
 from typing import Optional
 from numpy import ndarray, mgrid, asarray
+from matplotlib.collections import QuadMesh
+from matplotlib.transforms import Affine2D
 from matplotlib.figure import Figure 
 from matplotlib.axes import Axes
 from matplotlib.pyplot import cm, savefig
@@ -14,6 +16,8 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                            Functions                            <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+def move_image(qm: QuadMesh, dx, dy):
+    qm.set_transform(Affine2D().translate(dx, dy)+qm.axes.transData)
 def show(
         image: ndarray,
         #x/y axes
