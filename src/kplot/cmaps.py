@@ -1,7 +1,7 @@
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                             Imports                             <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-from kbasic.typing import Number, Iterable
+from kbasic.typing import Number
 from matplotlib.pyplot import cm
 from matplotlib.colors import Colormap, LinearSegmentedColormap, ListedColormap, \
         hex2color, Normalize, LogNorm, FuncNorm, AsinhNorm, PowerNorm, SymLogNorm, \
@@ -9,6 +9,7 @@ from matplotlib.colors import Colormap, LinearSegmentedColormap, ListedColormap,
 from numpy import uint8, zeros, ndarray, inf, nanmin, nanmax, nanquantile, nanmean, \
         nanstd, absolute, log10, ones, linspace
 from colorist import ColorOKLCH
+from collections.abc import Iterable
 
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                              Types                              <|===|-<

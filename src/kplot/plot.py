@@ -3,7 +3,9 @@
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 from kplot.axes import subplots
 
-from kbasic.typing import Number, Iterable, Optional
+from typing import Optional
+from collections.abc import Iterable
+from kbasic.typing import Number
 from numpy import asarray, hstack, column_stack, newaxis, concatenate, hypot, diff,\
                 nanmin, nanmax, ndarray, log10
 from matplotlib.figure import Figure

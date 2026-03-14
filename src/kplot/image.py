@@ -165,7 +165,7 @@ def contour(
         contour_dict['cmap'] = cmap
     else: #plot with a color
         contour_dict['colors'] = color if not colors else colors
-    img = ax.contour(
+    cnt = ax.contour(
         x, y, Z,
         **contour_dict,
         **kwds
@@ -182,7 +182,7 @@ def contour(
         if not '.' in save: save +=".jpeg"
         savefig(save, dpi=dpi)
     if show: show_fig()
-    return fig, ax, img
+    return fig, ax, cnt
 def contourf(
         Z: ndarray, 
         #x/y axes
