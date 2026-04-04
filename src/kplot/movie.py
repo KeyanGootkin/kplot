@@ -29,9 +29,9 @@ def ffmpeg(
 def func_video(
         video_name: str, fig: Figure, updater: Callable, N: int, 
         frames: str = f"./.temp", destination: str = "./", 
-        dpi: int = 100, fps: int = 30, verbose=True
+        dpi: int = 100, fps: int = 30, verbose=True, **updater_kwargs
     ) -> None:
-    ensure_path(f"")
+    ensure_path(f"{frames}/{video_name}")
     if len(glob(f"{frames}/*.png"))>0: system(f"rm {frames}/*.png")
     ndigits = len(str(N))
     # if the size isn't divisible by 2 ffmpeg gets mad???
@@ -41,7 +41,7 @@ def func_video(
     fig.set_size_inches(wpix/dpi, hpix/dpi)
     # make the frames and save them to the frames directory
     for i in verbose_bar(range(N), verbose):
-        updater(i)
+        updater(i, **updater_kwargs)
         fig.savefig(f"{frames}/{video_name}/{str(i).zfill(ndigits)}.png", dpi=dpi)
     # make the video
     ffmpeg(video_name, source=f"{frames}/{video_name}/", destination=destination, fps=fps)

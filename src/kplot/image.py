@@ -98,7 +98,9 @@ def show(
     # colorbar
     if colorbar: 
         divider = make_axes_locatable(ax)
-        colorbar_location = colorbar_style.pop("location") if "location" in colorbar_style.keys() else "right"
+        colorbar_location = colorbar_style.pop("location")\
+                            if "location" in colorbar_style.keys()\
+                            else "right"
         cax = divider.append_axes(colorbar_location, **colorbar_style)
         fig.colorbar(img, cax=cax, ax=ax, ticks=cticks, label=units, orientation = 'vertical' if colorbar_location in ('right', 'left') else 'horizontal')
         if colorbar_location=='top':

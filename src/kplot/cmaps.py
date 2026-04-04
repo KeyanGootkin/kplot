@@ -1,15 +1,20 @@
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                             Imports                             <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-from kbasic.typing import Number
-from matplotlib.pyplot import cm
+from kbasic.typing import Number, Array
+from collections.abc import Iterable
+from typing import Optional
+from matplotlib.pyplot import cm, gca
 from matplotlib.colors import Colormap, LinearSegmentedColormap, ListedColormap, \
         hex2color, Normalize, LogNorm, FuncNorm, AsinhNorm, PowerNorm, SymLogNorm, \
-        BoundaryNorm, CenteredNorm, TwoSlopeNorm 
+        BoundaryNorm, CenteredNorm, TwoSlopeNorm, ScalarMappable
+from matplotlib.axes_grid1 import make_axes_locatable
+from matplotlib.axes import Axes
 from numpy import uint8, zeros, ndarray, inf, nanmin, nanmax, nanquantile, nanmean, \
         nanstd, absolute, log10, ones, linspace
+from numpy.typing import NDArray
 from colorist import ColorOKLCH
-from collections.abc import Iterable
+
 
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                              Types                              <|===|-<
@@ -30,7 +35,9 @@ blue = "#7350E6"
 lightblue = "#AE9FE3"
 shadow = "#B8B7B8"
 manoaskies = LinearSegmentedColormap.from_list("manoaskies", [pink, blue])
-manoaskies_centered = LinearSegmentedColormap.from_list("manoaskies_centered", [lightpink, pink, "#000000", blue, lightblue])
+manoaskies_centered = LinearSegmentedColormap.from_list(
+    "manoaskies_centered", [lightpink, pink, "#000000", blue, lightblue]
+)
 manoaskies_background_blue = "#0C0524"
 pink2grey = LinearSegmentedColormap.from_list("p2g", [pink, shadow])
 grey2black = LinearSegmentedColormap.from_list("g2b", [shadow, "#000000"])
@@ -44,13 +51,56 @@ default_cmap = cm.plasma
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                            Functions                            <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+def colorbar(
+    z: Optional[Array] = None,
+    cmap: Cmap = default_cmap,
+    norm: Norm | str = 'linear',
+    ax: Optional[Axes] = None,
+    location: str = 'right',
+    size: str | Number = '7%',
+    pad: float = 0.05,
+    ticks: Optional[list] = None,
+    units: Optional[str] = None
+    ) -> None:
+    """docstring"""
+    n = auto_norm(norm, z)
+    ax = ax if ax else gca()
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes(location, size=size, pad=pad)
+    ax.get_figure().colorbar(
+        ScalarMappable(norm=n, cmap=cmap),
+        cax=cax, ax=ax, ticks=ticks, label=units,
+        orientation = 'vertical' if location in ('right', 'left') else 'horizontal'
+        )
+    if location=='top':
+        cax.xaxis.set_ticks_position('top')
+        cax.xaxis.set_label_position('top')
+
+def parse_color(
+    color,
+    norm='linear',
+    cmap=default_cmap,
+    ):
+    """docstring"""
+    match color:
+        # given an rgb(a)
+        case (r, g, b) | (r, g, b, a):
+            return color
+        # otherwise assume arrays of numbers want to be color-mapped
+        case x if type(color) in Array.types and type(color[0]) in Number.types:
+            color = [cmap(norm(c)) for c in color]
+        case _:
+            raise NotImplementedError(f"bad color: {color}")
+
 def auto_norm(
-    norm: str, 
-    frames: ndarray, 
-    linear_threshold: float|None = None, 
-    center: float|None = None, 
-    saturate: float|None = None
-) -> Norm:
+    norm: Norm | str,
+    frames: Optional[NDArray] = None,
+    vmin: Optional[Number] = None,
+    vcenter: Optional[Number] = None,
+    vmax: Optional[Number] = None,
+    linear_threshold: Optional[Number] = None,
+    saturate: Optional[Number] = None
+    ) -> Norm:
     """A function to create a matplotlib normalization given a set images.
 
     Args:
@@ -64,11 +114,20 @@ def auto_norm(
     Returns:
         matplotlib normalization
     """
-    if type(norm) in Cmap.types: return norm
+    if type(norm) in Norm.types: return norm
     frames = frames[(-inf < frames)&(frames < inf)]
-    # set min/max IF saturate is None                          or IF saturate is a tuple                                          ELSE assume its a float
-    low = nanmin(frames) if saturate is None else nanquantile(frames, 1-saturate[0]) if isinstance(saturate, tuple) else nanquantile(frames, 1-saturate)
-    high = nanmax(frames) if saturate is None else nanquantile(frames, 0+saturate[1]) if isinstance(saturate, tuple) else nanquantile(frames, 0+saturate)
+    # set min/max 
+    match (frames, vmin, vmax, saturate):
+        # case (ScalarField(), *_):
+        #     low, high = frames.extrema
+        case (_, x1, x2, _) if all([type(xi) in Number.types for xi in (x1, x2)]):
+            low, high = vmin, vmax 
+        case (ndarray(), None, None, None): 
+            low, high = nanmin(frames), nanmax(frames)
+        case (ndarray(), None, None, x) if type(x) in Number.types:
+            low, high = nanquantile(frames, (1-saturate, saturate))
+        case (ndarray(), None, None, x) if type(x) in Array.types:
+            low, high = nanquantile(frames, (1-saturate[0], saturate[1]))
     match norm.lower():
         case "lognorm"|"log":
             if low < 0: raise ValueError(f"minimum is {low}, LogNorm only takes positive values")
