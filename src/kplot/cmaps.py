@@ -1,15 +1,18 @@
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                             Imports                             <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-from kbasic.typing import Number, Array
+from abc import ABC
 from collections.abc import Iterable
 from typing import Optional
+from kbasic.typing import Number, Array
 from matplotlib.pyplot import cm, gca
+from matplotlib.cm import ScalarMappable
 from matplotlib.colors import Colormap, LinearSegmentedColormap, ListedColormap, \
         hex2color, Normalize, LogNorm, FuncNorm, AsinhNorm, PowerNorm, SymLogNorm, \
-        BoundaryNorm, CenteredNorm, TwoSlopeNorm, ScalarMappable
-from matplotlib.axes_grid1 import make_axes_locatable
+        BoundaryNorm, CenteredNorm, TwoSlopeNorm, BASE_COLORS, XKCD_COLORS, CSS4_COLORS,\
+        TABLEAU_COLORS
 from matplotlib.axes import Axes
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 from numpy import uint8, zeros, ndarray, inf, nanmin, nanmax, nanquantile, nanmean, \
         nanstd, absolute, log10, ones, linspace
 from numpy.typing import NDArray
@@ -19,16 +22,23 @@ from colorist import ColorOKLCH
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                              Types                              <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-class Norm:
+class Norm(ABC):
     types: list = [
         Normalize, LogNorm, FuncNorm, AsinhNorm, PowerNorm, SymLogNorm, 
         BoundaryNorm, CenteredNorm, TwoSlopeNorm
     ]
-class Cmap:
+    @classmethod
+    def __subclasshook__(cls, sub):
+        return sub in cls.types
+class Cmap(ABC):
     types: list = [Colormap, ListedColormap, LinearSegmentedColormap]
+    @classmethod
+    def __subclasshook__(cls, sub):
+        return sub in cls.types
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                           Definitions                           <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+all_mpl_colors: dict = BASE_COLORS | XKCD_COLORS | CSS4_COLORS | TABLEAU_COLORS
 pink = "#E34F68"
 lightpink = "#E39FAA"
 blue = "#7350E6"
@@ -76,21 +86,41 @@ def colorbar(
         cax.xaxis.set_ticks_position('top')
         cax.xaxis.set_label_position('top')
 
+def is_color(x)->bool:
+    """returns whether or not x can be interpreted as a color by matplotlib"""
+    match x:
+        # base matplotlib color name
+        case str() if x in all_mpl_colors:
+            return True
+        # hex code
+        case str() if x.startswith('#') and len(x) in [4, 7, 9]:
+            return True
+        # default color cycler
+        case str() if x.lower().startswith('c') and x[1:].is_numeric():
+            return True
+        # greyscale
+        case float() if 0<=x<=1:
+            return True
+        # rgb(a)
+        case Iterable() if len(x) in [3, 4] and all([isinstance(xi, Number) for xi in x]): 
+            return True
+        # matplotlib also accepts (color, alpha) as a format
+        case Iterable() if len(x)==2:
+            return all([is_color(x[0]), type(x[1])==float, 0<=x[1]<=1])
+    return False
+
 def parse_color(
     color,
-    norm='linear',
-    cmap=default_cmap,
+    norm: str | Norm = 'linear',
+    cmap: Cmap = default_cmap,
     ):
     """docstring"""
-    match color:
-        # given an rgb(a)
-        case (r, g, b) | (r, g, b, a):
-            return color
-        # otherwise assume arrays of numbers want to be color-mapped
-        case x if type(color) in Array.types and type(color[0]) in Number.types:
-            color = [cmap(norm(c)) for c in color]
-        case _:
-            raise NotImplementedError(f"bad color: {color}")
+    if is_color(color):
+        return color
+    if isinstance(color, Iterable):
+        norm = auto_norm(norm, color)
+        return cmap(norm(color))
+    raise TypeError(f"couldn't parse color of type: {type(color)}")
 
 def auto_norm(
     norm: Norm | str,
@@ -169,7 +199,7 @@ def lch_cmap(
         LCH(li, ci, hi).rgb for li, ci, hi in zip(ls, cs, hs)
     ]
     return ListedColormap(colors_list, N=N).with_extremes(
-        bad = colors_list[0] if bad is None else bad,
+        bad = (0,0,0,0) if bad is None else bad,
         under = colors_list[0] if under is None else under,
         over = colors_list[-1] if over is None else over
     )
@@ -191,7 +221,7 @@ def lch_cmap_diverging(
         LCH(li, ci, hi).rgb for li, ci, hi in zip(ls, cs, hs)
     ]
     return ListedColormap(colors_list, N=N).with_extremes(
-        bad = colors_list[N//2] if bad is None else bad,
+        bad = (0,0,0,0) if bad is None else bad,
         under = colors_list[0] if under is None else under,
         over = colors_list[-1] if over is None else over
     )

@@ -18,25 +18,29 @@ from matplotlib.figure import Figure
 # >-|===|>                            Functions                            <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 def ffmpeg(
-        file_name: str, 
-        source: str = "./frames", destination: str = "./", 
+        file_name: str,
+        source: str = "./frames", destination: str = "./",
         fps: int = 30, verbose: bool = False,
+        log=8, vcodec='libx264', pix_fmt='yuv420p'
     ) -> None:
     file_path: str = destination + '/' + file_name
     if not file_path.endswith('.mp4'): file_path += ".mp4"
     if verbose: print(purple("FFMPeg running..."))
-    system(f"ffmpeg -loglevel 8 -framerate {fps} -pattern_type glob -i '{source+'/*.png'}' -c:v libx264 -pix_fmt yuv420p -y {file_path}")
+    system(f"ffmpeg -loglevel {log} -framerate {fps} -pattern_type glob -i '{source+'/*.png'}' -c:v {vcodec} -pix_fmt {pix_fmt} -y {file_path}")
 def func_video(
-        video_name: str, fig: Figure, updater: Callable, N: int, 
-        frames: str = f"./.temp", destination: str = "./", 
-        dpi: int = 100, fps: int = 30, verbose=True, **updater_kwargs
+        video_name: str, fig: Figure, updater: Callable, N: int,
+        frames: str = f"./.temp", destination: str = "./",
+        dpi: int = 100, fps: int = 30, verbose=True,
+        vcodec='libx264', pix_fmt='yuv420p',
+        leave_frames=False,
+        **updater_kwargs
     ) -> None:
     ensure_path(f"{frames}/{video_name}")
     if len(glob(f"{frames}/*.png"))>0: system(f"rm {frames}/*.png")
     ndigits = len(str(N))
     # if the size isn't divisible by 2 ffmpeg gets mad???
     [wpix, hpix] = (array(fig.get_size_inches()) * dpi // 1).astype(int)
-    if wpix%2==1: wpix += 1 
+    if wpix%2==1: wpix += 1
     if hpix%2==1: hpix += 1
     fig.set_size_inches(wpix/dpi, hpix/dpi)
     # make the frames and save them to the frames directory
@@ -44,11 +48,15 @@ def func_video(
         updater(i, **updater_kwargs)
         fig.savefig(f"{frames}/{video_name}/{str(i).zfill(ndigits)}.png", dpi=dpi)
     # make the video
-    ffmpeg(video_name, source=f"{frames}/{video_name}/", destination=destination, fps=fps)
-    system(f'rm -r {frames}')
+    ffmpeg(
+        video_name, 
+        source=f"{frames}/{video_name}/", destination=destination, 
+        fps=fps, vcodec=vcodec, pix_fmt=pix_fmt
+    )
+    if not leave_frames: system(f'rm -r {frames}')
 def line_video(
-    xs, ys, 
-    fname, 
+    xs, ys,
+    fname,
     destination: str = '.',
     ax=None, figsize=(5, 5),
     fps=20, dpi=100,
@@ -93,7 +101,7 @@ def show_video(
     def update(f: int):
         img.set_array(frames[f])
     func_video(fname, fig, update, len(frames), destination=destination, fps=fps, dpi=dpi)
-    
+
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 # >-|===|>                            Decorators                           <|===|-<
 # !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==

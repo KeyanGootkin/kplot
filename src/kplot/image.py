@@ -1,23 +1,29 @@
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# >-|===|>                             Imports                             <|===|-<
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+"""a module implementing imshow in a way that actually makes sense."""
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                                    Imports                                     <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+from typing import Optional
+
 from kplot.cmaps import Cmap
 from kplot.axes import subplots
-from typing import Optional
-from numpy import ndarray, mgrid, asarray
+from kplot.plot import _align_algorithm
+
+from numpy import ndarray, mgrid, asarray, histogram2d, where, nan
 from matplotlib.collections import QuadMesh
 from matplotlib.transforms import Affine2D
-from matplotlib.figure import Figure 
+from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 from matplotlib.pyplot import cm, savefig
-from matplotlib.pyplot import show as show_fig
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
-# >-|===|>                            Functions                            <|===|-<
-# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
+# >-|===|>                                   Functions                                    <|===|-<
+# !==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==!==
 def move_image(qm: QuadMesh, dx, dy):
+    """docstring"""
     qm.set_transform(Affine2D().translate(dx, dy)+qm.axes.transData)
+
+
 def show(
         image: ndarray,
         #x/y axes
@@ -28,16 +34,12 @@ def show(
         ax: Optional[Axes] = None,
         axis: bool = True,
         figsize: tuple[float, float] = (10, 10),
-        show: bool = False,
         #plot parameters
         cmap: str|Cmap = cm.plasma,
         colorbar: bool = True,
         colorbar_style: dict = {'location':'right', "size":"7%", "pad":0.05},
         cticks: Optional[list] = None,
         units: Optional[str] = None,
-        #contour options
-        contour: Optional[ndarray] = None,
-        contour_style: dict = {'levels': 10, 'colors': 'black'},
         #plot formating
         xlim: tuple = (None, None),
         ylim: tuple = (None, None),
@@ -47,7 +49,7 @@ def show(
         dpi: int = 100,
         #everything else goes into pcolormesh
         **kwargs
-):
+    ):
     """a convinient way to imshow and arrange it nicely
 
     Args:
@@ -64,8 +66,6 @@ def show(
         colorbar_style (dict, optional): dictionary containing kwargs for the colorbar command. Defaults to {'location':'right', "size":"7%", "pad":0.05}.
         cticks (list, optional): the ticks to use on the colorbar. Defaults to None.
         units (str, optional): label for the colorbar. Defaults to None.
-        contour (ndarray, optional): whether to put a contour plot on top. Defaults to None.
-        contour_style (dict, optional): kwargs for contour plotting command. Defaults to {'levels': 10, 'colors': 'black'}.
         xlim (tuple, optional): the limits on the x axis. Defaults to (None, None).
         ylim (tuple, optional): the limits on the y axis. Defaults to (None, None).
         title (str, optional): the plot title. Defaults to None.
@@ -106,8 +106,6 @@ def show(
         if colorbar_location=='top':
             cax.xaxis.set_ticks_position('top')
             cax.xaxis.set_label_position('top')
-    # contour
-    if not contour is None: ax.contour(contour, **contour_style)
     # set limits
     ax.set_xlim(xlim)
     ax.set_ylim(ylim)
@@ -116,13 +114,14 @@ def show(
     # set aspect
     ax.set_aspect('equal')
     # present the figure
-    if len(save)>0: 
+    if len(save)>0:
         if not '.' in save: save +=".jpeg"
         savefig(save, dpi=dpi, bbox_inches='tight')
-    if show: show_fig()
     return fig, ax, img
+
+
 def contour(
-        Z: ndarray, 
+        Z: ndarray,
         #x/y axes
         x: ndarray|None = None,
         y: ndarray|None = None,
@@ -131,7 +130,6 @@ def contour(
         ax = None,
         axis: bool = True,
         figsize: tuple[float, float] = (10, 10),
-        show: bool = False,
         #plot parameters
         levels = 10,
         color = 'black',
@@ -149,6 +147,7 @@ def contour(
         #throw the rest in a dict
         **kwds
     ):
+    """docstring"""
     # prep data
     assert (ndims:=len(Z.shape))==2, f"show was given an image with {ndims} dimensions, please provide a 2d array"
     # check axes
@@ -157,10 +156,9 @@ def contour(
     # prep figure
     if ax is None: (fig, ax) = subplots(figsize=figsize)
     fig = ax.get_figure()
-    if not axis: 
+    if not axis:
         ax.axis('off')
         ax.set_position([0, 0, 1, 1])
-        colorbar = False
     # plot data
     contour_dict = {'levels':levels,"linestyles":linestyles,'negative_linestyles':negative_linestyles}
     if cmap: #plot with a cmap
@@ -183,8 +181,9 @@ def contour(
     if len(save)>0: 
         if not '.' in save: save +=".jpeg"
         savefig(save, dpi=dpi)
-    if show: show_fig()
     return fig, ax, cnt
+
+
 def contourf(
         Z: ndarray, 
         #x/y axes
@@ -195,7 +194,6 @@ def contourf(
         ax = None,
         axis: bool = True,
         figsize: tuple[float, float] = (10, 10),
-        show: bool = False,
         #plot parameters
         levels = 10,
         cmap = cm.plasma,
@@ -213,6 +211,7 @@ def contourf(
         #throw the rest in a dict
         **kwds
     ):
+    """docstring"""
     # prep data
     assert (ndims:=len(Z.shape))==2, f"show was given an image with {ndims} dimensions, please provide a 2d array"
     # check axes
@@ -221,7 +220,7 @@ def contourf(
     # prep figure
     if ax is None: (fig, ax) = subplots(figsize=figsize)
     fig = ax.get_figure()
-    if not axis: 
+    if not axis:
         ax.axis('off')
         ax.set_position([0, 0, 1, 1])
         colorbar = False
@@ -249,5 +248,30 @@ def contourf(
     if len(save)>0: 
         if not '.' in save: save +=".jpeg"
         savefig(save, dpi=dpi)
-    if show: show_fig()
     return fig, ax, img
+
+
+def hist2d(
+    x,
+    y,
+    bins=20,
+    cmin=None,
+    cmax=None,
+    density=False,
+    bin_align='m',
+    **kwargs,
+    ):
+    """docstring"""
+    n, xbins, ybins = histogram2d(x, y, bins=bins, density=density,)
+    if cmin:
+        n = where(n>cmin, n, nan)
+    if cmax:
+        n = where(n<cmin, n, nan)
+    return show(
+        n.T,
+        x=_align_algorithm(xbins, bin_align),
+        xlim=(min(xbins), max(xbins)),
+        y=_align_algorithm(ybins, bin_align),
+        ylim=(min(ybins), max(ybins)),
+        **kwargs
+        )
